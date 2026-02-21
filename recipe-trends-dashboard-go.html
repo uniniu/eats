@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recipe Trends Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5f0e8;
+    --paper: #faf7f2;
+    --ink: #1a1612;
+    --muted: #8a7f74;
+    --accent: #c8402a;
+    --accent2: #2a6e4e;
+    --accent3: #c4901a;
+    --border: #e2dbd0;
+    --card: #ffffff;
+    --shadow: 0 2px 16px rgba(26,22,18,0.07);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0 40px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--accent);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 0;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .brand-text h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  .brand-text span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  nav {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: #6b6460;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  nav button:hover { color: var(--cream); background: rgba(255,255,255,0.07); }
+  nav button.active { color: var(--cream); background: var(--accent); }
+
+  /* ── HERO STRIP ── */
+  .hero-strip {
+    background: var(--paper);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-title em {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .hero-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 8px;
+    line-height: 1.8;
+  }
+
+  .timeframe-pills {
+    display: flex;
+    gap: 6px;
+  }
+
+  .pill {
+    padding: 7px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--muted);
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+  .pill.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* ── LAYOUT ── */
+  main {
+    padding: 32px 40px 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .section { display: none; animation: fadeUp 0.4s ease; }
+  .section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .section-header p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .card-header h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .card-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--cream);
+    padding: 3px 10px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+  }
+
+  .trends-iframe {
+    width: 100%;
+    border: none;
+    display: block;
+  }
+
+  /* ── GRIDS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+
+  /* ── INSIGHT BOXES ── */
+  .insight-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .insight-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .insight-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .insight-box.red::before { background: var(--accent); }
+  .insight-box.green::before { background: var(--accent2); }
+  .insight-box.gold::before { background: var(--accent3); }
+  .insight-box.ink::before { background: var(--ink); }
+
+  .insight-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .insight-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .insight-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── LINKS PANEL ── */
+  .links-panel {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .trend-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+
+  .trend-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 2px 8px rgba(200,64,42,0.1);
+  }
+
+  .trend-link .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── REGION TABS ── */
+  .region-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .rtab {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+
+  .rtab:hover { border-color: var(--accent2); color: var(--accent2); }
+  .rtab.active { background: var(--accent2); border-color: var(--accent2); color: white; }
+
+  .region-panel { display: none; }
+  .region-panel.active { display: block; animation: fadeUp 0.3s ease; }
+
+  /* ── NOTE CALLOUT ── */
+  .callout {
+    background: #fff8f0;
+    border: 1px solid #f0d9c0;
+    border-left: 4px solid var(--accent3);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #6b5a3e;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .callout strong { color: var(--ink); }
+
+  /* ── CREATOR TABLE ── */
+  .creator-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    padding: 20px;
+  }
+
+  .creator-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: all 0.15s;
+  }
+
+  .creator-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(200,64,42,0.08);
+  }
+
+  .creator-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  .creator-handle {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .creator-meta {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .creator-link-btn {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+
+  .creator-link-btn:hover { border-bottom-color: var(--accent); }
+
+  .platform-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+    margin-left: 6px;
+  }
+
+  .yt { background: #ffebeb; color: #c00; }
+  .tt { background: #e8faf8; color: #00766b; }
+  .ig { background: #fceef7; color: #8b00a0; }
+  .rd { background: #fff0e8; color: #c84300; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: var(--paper);
+  }
+
+  footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ── SKELETON LOADER ── */
+  .skeleton {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #f0ebe2 25%, #e8e0d4 50%, #f0ebe2 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 0 0 10px 10px;
+    z-index: 2;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .skeleton::after { content: 'Loading trends…'; }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @media (max-width: 900px) {
+    header { padding: 0 20px; flex-direction: column; gap: 0; }
+    nav { flex-wrap: wrap; padding: 8px 0; }
+    .hero-strip, main { padding-left: 20px; padding-right: 20px; }
+    .grid-2, .grid-3, .insight-row { grid-template-columns: 1fr; }
+    .hero-title { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <div class="brand-mark">🍳</div>
+    <div class="brand-text">
+      <h1>Recipe Trends Explorer</h1>
+      <span>Powered by Google Trends · Live Data</span>
+    </div>
+  </div>
+  <nav>
+    <button class="active" onclick="showSection('overview')">Overview</button>
+    <button onclick="showSection('categories')">Categories</button>
+    <button onclick="showSection('us-regions')">US Regions</button>
+    <button onclick="showSection('international')">International</button>
+    <button onclick="showSection('creators')">Creators</button>
+  </nav>
+</header>
+
+<!-- HERO STRIP -->
+<div class="hero-strip">
+  <div>
+    <h1 class="hero-title">What the world is<br><em>cooking</em> right now</h1>
+    <p class="hero-meta">
+      Google Trends · Real-time search data · All regions<br>
+      Updated continuously · No API key required
+    </p>
+  </div>
+  <div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;">Time Range</p>
+    <div class="timeframe-pills" style="margin-bottom:10px;">
+      <button class="pill active" onclick="setTime('now 7-d', this)">7 Days</button>
+      <button class="pill" onclick="setTime('today 1-m', this)">1 Month</button>
+      <button class="pill" onclick="setTime('today 12-m', this)">12 Months</button>
+      <button class="pill" onclick="setTime('today 5-y', this)">5 Years</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Custom:</span>
+      <input type="date" id="date-from" value="2025-05-01"
+        style="padding:5px 10px;border-radius:6px;border:1.5px solid var(--border);font-family:'DM Mono',monospace;font-size:12px;background:white;color:var(--ink);cursor:pointer;">
+      <span style="font-size:12px;color:var(--muted);">→</span>
+      <input type="date" id="date-to" value="2025-09-30"
+        style="padding:5px 10px;border-radius:6px;border:1.5px solid var(--border);font-family:'DM Mono',monospace;font-size:12px;background:white;color:var(--ink);cursor:pointer;">
+      <button onclick="applyCustomRange()"
+        style="padding:5px 14px;border-radius:6px;border:1.5px solid var(--accent);background:var(--accent);color:white;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:0.05em;">
+        Apply
+      </button>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- ══════════ OVERVIEW ══════════ -->
+  <section class="section active" id="overview">
+    <div class="insight-row">
+      <div class="insight-box red">
+        <div class="insight-label">Trending Now #1</div>
+        <div class="insight-value">Doner Kebab</div>
+        <div class="insight-sub">Home recipe searches ↑ 28% this week</div>
+      </div>
+      <div class="insight-box green">
+        <div class="insight-label">Rising Fast</div>
+        <div class="insight-value">High-Protein</div>
+        <div class="insight-sub">Meal prep + GLP-1 diet crossover</div>
+      </div>
+      <div class="insight-box gold">
+        <div class="insight-label">Global Crossover</div>
+        <div class="insight-value">Dubai Tacos</div>
+        <div class="insight-sub">Middle East → US via TikTok</div>
+      </div>
+      <div class="insight-box ink">
+        <div class="insight-label">Evergreen Leader</div>
+        <div class="insight-value">Sourdough</div>
+        <div class="insight-sub">Consistent top performer since 2020</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>How to read these charts:</strong> Google Trends shows relative search interest from 0–100. 100 = peak popularity for that term in the selected time/region. Use the time pills above to switch between 7-day, monthly, yearly, and 5-year views across all charts simultaneously.
+    </div>
+
+    <div class="links-panel">
+      <a class="trend-link" href="https://trends.google.com/trends/explore?cat=457&geo=US" target="_blank">
+        <span class="dot" style="background:#c8402a"></span>Google Trends: Food & Drink
+      </a>
+      <a class="trend-link" href="https://trends.google.com/trends/trendingsearches/daily?geo=US" target="_blank">
+        <span class="dot" style="background:#2a6e4e"></span>Daily Trending Searches
+      </a>
+      <a class="trend-link" href="https://trends.google.com/trends/yis/2024/US/" target="_blank">
+        <span class="dot" style="background:#c4901a"></span>Year in Search 2024
+      </a>
+      <a class="trend-link" href="https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/pc/en" target="_blank">
+        <span class="dot" style="background:#00766b"></span>TikTok Creative Center
+      </a>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header">
+          <h3>Top Recipe Searches — US</h3>
+          <span class="card-tag">Live · Google Trends</span>
+        </div>
+        <iframe class="trends-iframe" id="iframe-overview-us" height="360"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22doner%20kebab%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22high%20protein%20meal%20prep%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22sourdough%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22smash%20burger%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Viral Food Trends — Global</h3>
+          <span class="card-tag">Live · Google Trends</span>
+        </div>
+        <iframe class="trends-iframe" height="360"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22Dubai%20chocolate%22%2C%22geo%22%3A%22%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22cottage%20cheese%20recipe%22%2C%22geo%22%3A%22%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22girl%20dinner%22%2C%22geo%22%3A%22%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22Korean%20corn%20dog%22%2C%22geo%22%3A%22%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Regional Interest by US State — Recipe Searches</h3>
+        <span class="card-tag">Heat Map · Google Trends</span>
+      </div>
+      <iframe class="trends-iframe" height="420"
+        data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A457%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+      </iframe>
+    </div>
+  </section>
+
+  <!-- ══════════ CATEGORIES ══════════ -->
+  <section class="section" id="categories">
+    <div class="section-header">
+      <h2>Recipe Category Trends</h2>
+      <p>Head-to-head comparisons across major content themes</p>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header">
+          <h3>🔥 Viral / Fusion Recipes</h3>
+          <span class="card-tag">Trending</span>
+        </div>
+        <iframe class="trends-iframe" height="320"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22doner%20kebab%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22Dubai%20taco%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22smash%20burger%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22Philly%20cheesesteak%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>💪 High-Protein / Health</h3>
+          <span class="card-tag">Rising</span>
+        </div>
+        <iframe class="trends-iframe" height="320"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22high%20protein%20meal%20prep%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22cottage%20cheese%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22Mediterranean%20diet%20recipes%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22Greek%20yogurt%20bowl%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header">
+          <h3>🌏 Asian-Inspired</h3>
+          <span class="card-tag">Steady Growth</span>
+        </div>
+        <iframe class="trends-iframe" height="320"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22Korean%20corn%20dog%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22birria%20tacos%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22ramen%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22sushi%20burrito%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>🍞 Baking & Comfort Food</h3>
+          <span class="card-tag">Evergreen</span>
+        </div>
+        <iframe class="trends-iframe" height="320"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22sourdough%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22banana%20bread%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22chocolate%20chip%20cookies%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22croissant%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <h3>🌱 Plant-Based / Vegan</h3>
+          <span class="card-tag">Growing</span>
+        </div>
+        <iframe class="trends-iframe" height="320"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22vegan%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22plant%20based%20meal%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22tofu%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22lentil%20soup%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>🍖 BBQ & Grill Culture</h3>
+          <span class="card-tag">Regional Strong</span>
+        </div>
+        <iframe class="trends-iframe" height="320"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22brisket%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22pulled%20pork%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22ribs%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22Nashville%20hot%20chicken%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ US REGIONS ══════════ -->
+  <section class="section" id="us-regions">
+    <div class="section-header">
+      <h2>US Regional Micro-Trends</h2>
+      <p>Recipe search interest filtered by US region</p>
+    </div>
+
+    <div class="region-tabs">
+      <button class="rtab active" onclick="showRegion('east-coast', this)">🗽 East Coast</button>
+      <button class="rtab" onclick="showRegion('west-coast', this)">🌴 West Coast</button>
+      <button class="rtab" onclick="showRegion('pnw', this)">🌲 PNW</button>
+      <button class="rtab" onclick="showRegion('midwest', this)">🌽 Midwest</button>
+      <button class="rtab" onclick="showRegion('south', this)">🔥 South</button>
+    </div>
+
+    <!-- East Coast -->
+    <div class="region-panel active" id="region-east-coast">
+      <div class="callout">
+        <strong>East Coast (NY, NJ, MA, PA, DC, CT):</strong> Italian-American comfort food, upscale home dining, NYC restaurant recreation, and Philly cheesesteak variations dominate. Instagram and YouTube long-form drive discovery here.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>East Coast Recipe Trends</h3><span class="card-tag">NY · NJ · MA · PA</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22Philly%20cheesesteak%20recipe%22%2C%22geo%22%3A%22US-NY%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22pasta%20recipe%22%2C%22geo%22%3A%22US-NY%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22pizza%20dough%20recipe%22%2C%22geo%22%3A%22US-NY%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22bagel%20recipe%22%2C%22geo%22%3A%22US-NY%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Regional Heat Map</h3><span class="card-tag">Northeast US</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22Italian%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- West Coast -->
+    <div class="region-panel" id="region-west-coast">
+      <div class="callout">
+        <strong>West Coast (CA, WA, OR):</strong> Health-first, aesthetics-forward. Heavy Asian and Latin fusion. Avocado toast variations, Korean-Mexican crossover, and cold brew recipes dominate LA and SF markets.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>West Coast Recipe Trends</h3><span class="card-tag">CA · OR</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22avocado%20toast%20recipe%22%2C%22geo%22%3A%22US-CA%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22Korean%20BBQ%20recipe%22%2C%22geo%22%3A%22US-CA%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22birria%20tacos%22%2C%22geo%22%3A%22US-CA%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22sushi%20burrito%22%2C%22geo%22%3A%22US-CA%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Regional Heat Map</h3><span class="card-tag">Pacific Coast</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22vegan%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- PNW -->
+    <div class="region-panel" id="region-pnw">
+      <div class="callout">
+        <strong>Pacific Northwest (WA, OR, ID):</strong> Science-driven cooking, sustainable sourcing, Japanese and Korean techniques. Foraged ingredients, salmon, and farm-to-table bowls are uniquely strong here. Reddit and YouTube long-form lead.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>PNW Recipe Trends</h3><span class="card-tag">WA · OR · ID</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22salmon%20recipe%22%2C%22geo%22%3A%22US-WA%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22mushroom%20recipe%22%2C%22geo%22%3A%22US-WA%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22sourdough%20recipe%22%2C%22geo%22%3A%22US-WA%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22miso%20soup%20recipe%22%2C%22geo%22%3A%22US-WA%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Regional Heat Map</h3><span class="card-tag">Pacific Northwest</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22salmon%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Midwest -->
+    <div class="region-panel" id="region-midwest">
+      <div class="callout">
+        <strong>Midwest (IL, OH, MI, MN, WI, MO, IN):</strong> Family-sized comfort meals, budget-conscious cooking, and hearty classics. Casseroles, smash burgers, and one-pot soups dominate. TikTok and Facebook are the primary discovery platforms.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>Midwest Recipe Trends</h3><span class="card-tag">IL · OH · MI · MN</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22casserole%20recipe%22%2C%22geo%22%3A%22US-IL%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22pot%20roast%20recipe%22%2C%22geo%22%3A%22US-IL%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22smash%20burger%20recipe%22%2C%22geo%22%3A%22US-IL%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22chili%20recipe%22%2C%22geo%22%3A%22US-IL%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Regional Heat Map</h3><span class="card-tag">Midwest States</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22comfort%20food%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- South -->
+    <div class="region-panel" id="region-south">
+      <div class="callout">
+        <strong>South (TX, GA, TN, LA, FL, NC, SC):</strong> BBQ culture dominates. Spice-forward content, Cajun/Creole riffs, Nashville hot everything, and Southern biscuit variations lead searches. YouTube and TikTok drive massive reach here.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>Southern Recipe Trends</h3><span class="card-tag">TX · GA · TN · LA</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22brisket%20recipe%22%2C%22geo%22%3A%22US-TX%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22Nashville%20hot%20chicken%22%2C%22geo%22%3A%22US-TX%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22gumbo%20recipe%22%2C%22geo%22%3A%22US-TX%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22biscuits%20and%20gravy%20recipe%22%2C%22geo%22%3A%22US-TX%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Regional Heat Map</h3><span class="card-tag">Southern States</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22BBQ%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ INTERNATIONAL ══════════ -->
+  <section class="section" id="international">
+    <div class="section-header">
+      <h2>International Recipe Trends</h2>
+      <p>Search interest by global region</p>
+    </div>
+
+    <div class="region-tabs">
+      <button class="rtab active" onclick="showIntl('eu', this)">🇪🇺 Europe</button>
+      <button class="rtab" onclick="showIntl('asia', this)">🏯 Asia</button>
+      <button class="rtab" onclick="showIntl('latam', this)">🌿 Latin America</button>
+      <button class="rtab" onclick="showIntl('me', this)">🌙 Middle East</button>
+    </div>
+
+    <!-- EU -->
+    <div class="region-panel active" id="intl-eu">
+      <div class="callout">
+        <strong>Europe:</strong> Technique-first content. French & Italian classics dominate YouTube long-form. UK street food and Nordic fermentation are the breakout trends. Authenticity is heavily valued over fusion.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>European Recipe Trends</h3><span class="card-tag">UK · FR · IT · DE</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22pasta%20carbonara%20recipe%22%2C%22geo%22%3A%22GB%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22sourdough%20bread%20recipe%22%2C%22geo%22%3A%22GB%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22croissant%20recipe%22%2C%22geo%22%3A%22FR%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22doner%20kebab%20recipe%22%2C%22geo%22%3A%22DE%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>EU Heat Map</h3><span class="card-tag">Europe</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22pasta%20recipe%22%2C%22geo%22%3A%22150%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASIA -->
+    <div class="region-panel" id="intl-asia">
+      <div class="callout">
+        <strong>Asia:</strong> ASMR and sensory cooking content dominates. Japanese home cooking, K-Food, and Taiwanese night market dishes lead. No-talk cooking videos are massively popular — and K-food continues its global spread.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>Asian Recipe Trends</h3><span class="card-tag">JP · KR · TW · TH</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22ramen%20recipe%22%2C%22geo%22%3A%22JP%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22tteokbokki%20recipe%22%2C%22geo%22%3A%22KR%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22pad%20thai%20recipe%22%2C%22geo%22%3A%22TH%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22dumpling%20recipe%22%2C%22geo%22%3A%22CN%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Asia Heat Map</h3><span class="card-tag">APAC Region</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22Korean%20food%20recipe%22%2C%22geo%22%3A%22035%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Latin America -->
+    <div class="region-panel" id="intl-latam">
+      <div class="callout">
+        <strong>Latin America:</strong> Spanish-language content is exploding. Grill culture (churrasco, asado) ties the region together. Mexican creators are crossing onto US trending charts at scale. Ceviche and empanada content rising fast.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>LatAm Recipe Trends</h3><span class="card-tag">MX · BR · AR · CO</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22tacos%20recipe%22%2C%22geo%22%3A%22MX%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22churrasco%20recipe%22%2C%22geo%22%3A%22BR%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22ceviche%20recipe%22%2C%22geo%22%3A%22PE%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22empanada%20recipe%22%2C%22geo%22%3A%22AR%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>LatAm Heat Map</h3><span class="card-tag">South America</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22tacos%22%2C%22geo%22%3A%22419%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle East -->
+    <div class="region-panel" id="intl-me">
+      <div class="callout">
+        <strong>Middle East:</strong> The Dubai effect is driving international fusion. Middle Eastern spices are crossing into Western viral recipes at unprecedented scale. Shawarma home recipes, hummus boards, and Arabic sweets are dominant categories.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>Middle East Recipe Trends</h3><span class="card-tag">AE · SA · TR · EG</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22shawarma%20recipe%22%2C%22geo%22%3A%22AE%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22hummus%20recipe%22%2C%22geo%22%3A%22AE%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22Dubai%20chocolate%22%2C%22geo%22%3A%22AE%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22mansaf%20recipe%22%2C%22geo%22%3A%22SA%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Middle East Heat Map</h3><span class="card-tag">MENA Region</span></div>
+          <iframe class="trends-iframe" height="340"
+            data-src="https://trends.google.com/trends/embed/explore/GEO_MAP?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22shawarma%22%2C%22geo%22%3A%22145%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ CREATORS ══════════ -->
+  <section class="section" id="creators">
+    <div class="section-header">
+      <h2>Top Recipe Creators</h2>
+      <p>Leading creators by platform with direct links</p>
+    </div>
+
+    <div class="callout" style="margin-bottom:20px;">
+      ⚠️ <strong>Note on creator name searches:</strong> Google Trends embed iframes don't support searching by person name directly — they return a 400 error. The charts below instead compare the <em>content styles</em> these creators are known for, which is actually more useful for trend intelligence. Click any creator card below to visit their channel directly.
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header"><h3>YouTube Creator Content Styles</h3><span class="card-tag">Search Interest · US</span></div>
+        <iframe class="trends-iframe" height="320"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22restaurant%20dupe%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22movie%20food%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22food%20science%20cooking%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22gordon%20ramsay%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>TikTok Content Format Trends</h3><span class="card-tag">Search Interest · US</span></div>
+        <iframe class="trends-iframe" height="320"
+          data-src="https://trends.google.com/trends/embed/explore/TIMESERIES?req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22ASMR%20cooking%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22private%20chef%20recipes%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22mediterranean%20meal%20prep%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%2C%7B%22keyword%22%3A%22half%20baked%20harvest%20recipe%22%2C%22geo%22%3A%22US%22%2C%22time%22%3A%22now%207-d%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D&tz=-300&lang=en">
+        </iframe>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Creator Directory</h3>
+        <span class="card-tag">All Platforms · With Links</span>
+      </div>
+      <div class="creator-grid">
+
+        <div class="creator-card">
+          <div class="creator-name">Joshua Weissman <span class="platform-badge yt">YouTube</span></div>
+          <div class="creator-handle">@JoshuaWeissman · 10M+ subs</div>
+          <div class="creator-meta">Restaurant dupes, budget cooking, Texas-based. Best known for "But Better" series recreating fast food.</div>
+          <a class="creator-link-btn" href="https://youtube.com/@JoshuaWeissman" target="_blank">Visit Channel →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">Andrew Rea (Babish) <span class="platform-badge yt">YouTube</span></div>
+          <div class="creator-handle">@BabishCulinaryUniverse · 10M+ subs</div>
+          <div class="creator-meta">Recreates dishes from TV & movies. Based in NY. One of the most-searched cooking channels on Google.</div>
+          <a class="creator-link-btn" href="https://youtube.com/@BabishCulinaryUniverse" target="_blank">Visit Channel →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">Ethan Chlebowski <span class="platform-badge yt">YouTube</span></div>
+          <div class="creator-handle">@EthanChlebowski · 2M+ subs</div>
+          <div class="creator-meta">Science-backed cooking, PNW-based. Rigorous technique meets practical home cooking.</div>
+          <a class="creator-link-btn" href="https://youtube.com/@EthanChlebowski" target="_blank">Visit Channel →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">J. Kenji López-Alt <span class="platform-badge rd">Reddit</span></div>
+          <div class="creator-handle">u/J_Kenji_Lopez-Alt · Seattle, WA</div>
+          <div class="creator-meta">Food science authority. Author of The Food Lab. Active on Reddit r/Cooking. Most trusted technical voice in recipe content.</div>
+          <a class="creator-link-btn" href="https://reddit.com/user/J_Kenji_Lopez-Alt" target="_blank">View Profile →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">Albert Cancook <span class="platform-badge tt">TikTok</span></div>
+          <div class="creator-handle">@albertcancook · 20M+ followers</div>
+          <div class="creator-meta">Viral ramen riffs, ASMR cooking. Known for Big Mac Ramen (197M views). Promotes Scrub Daddy.</div>
+          <a class="creator-link-btn" href="https://tiktok.com/@albertcancook" target="_blank">View Profile →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">Yumna Jawad (Feel Good Foodie) <span class="platform-badge tt">TikTok</span></div>
+          <div class="creator-handle">@feelgoodfoodie · 2.1M followers</div>
+          <div class="creator-meta">Mediterranean healthy recipes, Michigan-based. Founded Oath Oats. NYT bestselling author.</div>
+          <a class="creator-link-btn" href="https://tiktok.com/@feelgoodfoodie" target="_blank">View Profile →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">Tommy Winkler <span class="platform-badge tt">TikTok</span></div>
+          <div class="creator-handle">@tommywinkler · 10.6M followers</div>
+          <div class="creator-meta">Viral food reviews, West Coast. Covers trending dishes and restaurant experiences with comedic style.</div>
+          <a class="creator-link-btn" href="https://tiktok.com/@tommywinkler" target="_blank">View Profile →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">Tieghan Gerard (Half Baked Harvest) <span class="platform-badge ig">Instagram</span></div>
+          <div class="creator-handle">@halfbakedharvest · 4M followers</div>
+          <div class="creator-meta">Cozy seasonal recipes, Colorado-based. Most-saved food account on Instagram. Earthy, aesthetic food photography.</div>
+          <a class="creator-link-btn" href="https://instagram.com/halfbakedharvest" target="_blank">View Profile →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">Meredith Hayden (Wishbone Kitchen) <span class="platform-badge ig">Instagram</span></div>
+          <div class="creator-handle">@wishbonekitchen · 1.2M followers</div>
+          <div class="creator-meta">Private chef in the Hamptons. Behind-the-scenes luxury dining sparked the #privatechefhamptons trend.</div>
+          <a class="creator-link-btn" href="https://instagram.com/wishbonekitchen" target="_blank">View Profile →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">Ahmad Alzahabi (The Golden Balance) <span class="platform-badge ig">Instagram</span></div>
+          <div class="creator-handle">@thegoldenbalance · 3M followers</div>
+          <div class="creator-meta">Global fusion dishes, Middle East-inspired. Runs nonprofit fighting world hunger alongside content creation.</div>
+          <a class="creator-link-btn" href="https://instagram.com/thegoldenbalance" target="_blank">View Profile →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">r/EatCheapAndHealthy <span class="platform-badge rd">Reddit</span></div>
+          <div class="creator-handle">r/EatCheapAndHealthy · 4M members</div>
+          <div class="creator-meta">Budget-friendly nutrition. One of the most active recipe communities online. Drives significant Google search volume.</div>
+          <a class="creator-link-btn" href="https://reddit.com/r/EatCheapAndHealthy" target="_blank">Visit Community →</a>
+        </div>
+
+        <div class="creator-card">
+          <div class="creator-name">r/MealPrepSunday <span class="platform-badge rd">Reddit</span></div>
+          <div class="creator-handle">r/MealPrepSunday · 2.1M members</div>
+          <div class="creator-meta">Batch cooking culture. Weekly meal prep posts drive some of the highest engagement in food communities.</div>
+          <a class="creator-link-btn" href="https://reddit.com/r/MealPrepSunday" target="_blank">Visit Community →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>Recipe Trends Explorer · Data via Google Trends (free, no API key) · Live search interest · Updated continuously</p>
+  <p>
+    <a href="https://trends.google.com/trends/explore?cat=457" target="_blank">Open Google Trends Food →</a>
+    &nbsp;&nbsp;
+    <a href="https://trends.google.com/trends/trendingsearches/daily?geo=US" target="_blank">Daily Trending →</a>
+  </p>
+</footer>
+
+<script>
+  // ── STATE ──────────────────────────────────────────────
+  let currentTime = 'now 7-d';
+  const loadedIframes = new Set(); // track which iframes have been activated
+
+  // ── LAZY LOAD HELPERS ──────────────────────────────────
+  // Activate iframes inside a container that have data-src but no src yet
+  function activateIframes(container) {
+    container.querySelectorAll('iframe[data-src]').forEach(iframe => {
+      if (loadedIframes.has(iframe)) return;
+      loadedIframes.add(iframe);
+      const rawSrc = iframe.getAttribute('data-src');
+      iframe.src = applyTimeTo(rawSrc, currentTime);
+      showSkeletonUntilLoad(iframe);
+    });
+  }
+
+  // Show a shimmer placeholder behind the iframe while it loads
+  function showSkeletonUntilLoad(iframe) {
+    const wrap = iframe.parentElement;
+    const sk = document.createElement('div');
+    sk.className = 'skeleton';
+    sk.style.height = iframe.getAttribute('height') + 'px';
+    wrap.style.position = 'relative';
+    wrap.appendChild(sk);
+    iframe.addEventListener('load', () => sk.remove(), { once: true });
+    // Fallback remove after 12s
+    setTimeout(() => sk.remove(), 12000);
+  }
+
+  // Rewrite the time param in a Google Trends URL
+  // IMPORTANT: must NOT use url.searchParams.set() — it double-encodes the req value.
+  // Instead we manually splice the req= segment in the raw query string.
+  function applyTimeTo(src, time) {
+    try {
+      const url = new URL(src);
+      // Get the raw (already-encoded) req param directly from the query string
+      const rawQuery = url.search.slice(1); // strip leading '?'
+      const reqMatch = rawQuery.match(/(?:^|&)req=([^&]*)/);
+      if (!reqMatch) return src;
+      const rawReq = reqMatch[1]; // still %-encoded
+      // Decode → parse → mutate → re-encode
+      const decoded = decodeURIComponent(rawReq);
+      const parsed = JSON.parse(decoded);
+      if (parsed.comparisonItem) {
+        parsed.comparisonItem.forEach(item => { item.time = time; });
+      }
+      const newEncoded = encodeURIComponent(JSON.stringify(parsed));
+      // Splice back into the raw query string (don't let URL re-encode it)
+      const newQuery = rawQuery.replace(/(?:^|&)req=[^&]*/, m =>
+        m.startsWith('&') ? '&req=' + newEncoded : 'req=' + newEncoded
+      );
+      return url.origin + url.pathname + '?' + newQuery;
+    } catch(e) { return src; }
+  }
+
+  // Reload all *already-loaded* iframes with a new time
+  function reloadAllWith(time) {
+    document.querySelectorAll('.trends-iframe').forEach(iframe => {
+      const rawSrc = iframe.getAttribute('data-src');
+      if (!rawSrc) return;
+      if (loadedIframes.has(iframe)) {
+        iframe.src = applyTimeTo(rawSrc, time);
+      }
+    });
+  }
+
+  // ── SECTION NAV ────────────────────────────────────────
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    const sec = document.getElementById(id);
+    sec.classList.add('active');
+    event.target.classList.add('active');
+
+    // Load iframes directly in this section (not inside hidden region panels)
+    // For sections without sub-tabs, load all. For those with tabs, load only active panel.
+    const activePanels = sec.querySelectorAll('.region-panel.active');
+    if (activePanels.length > 0) {
+      activePanels.forEach(p => activateIframes(p));
+      // Also load any iframes directly in the section (outside panels)
+      sec.querySelectorAll(':scope > * > iframe[data-src], :scope > iframe[data-src]').forEach(iframe => {
+        if (!loadedIframes.has(iframe)) {
+          loadedIframes.add(iframe);
+          iframe.src = applyTimeTo(iframe.getAttribute('data-src'), currentTime);
+          showSkeletonUntilLoad(iframe);
+        }
+      });
+    } else {
+      activateIframes(sec);
+    }
+  }
+
+  // ── US REGION TABS ─────────────────────────────────────
+  function showRegion(id, btn) {
+    document.querySelectorAll('#us-regions .region-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#us-regions .rtab').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('region-' + id);
+    panel.classList.add('active');
+    btn.classList.add('active');
+    activateIframes(panel);
+  }
+
+  // ── INTL TABS ──────────────────────────────────────────
+  function showIntl(id, btn) {
+    document.querySelectorAll('#international .region-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#international .rtab').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('intl-' + id);
+    panel.classList.add('active');
+    btn.classList.add('active');
+    activateIframes(panel);
+  }
+
+  // ── TIMEFRAME PILLS ────────────────────────────────────
+  function setTime(t, btn) {
+    currentTime = t;
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    // Clear custom date highlight
+    document.getElementById('date-from').style.borderColor = 'var(--border)';
+    document.getElementById('date-to').style.borderColor = 'var(--border)';
+    reloadAllWith(t);
+  }
+
+  // ── CUSTOM DATE RANGE ──────────────────────────────────
+  function applyCustomRange() {
+    const from = document.getElementById('date-from').value; // e.g. "2025-05-01"
+    const to   = document.getElementById('date-to').value;   // e.g. "2025-09-30"
+    if (!from || !to) { alert('Please select both a start and end date.'); return; }
+    if (from >= to) { alert('Start date must be before end date.'); return; }
+
+    // Google Trends custom range format: "2025-05-01 2025-09-30"
+    const t = `${from} ${to}`;
+    currentTime = t;
+
+    // Deactivate all pills, highlight date inputs
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    document.getElementById('date-from').style.borderColor = 'var(--accent)';
+    document.getElementById('date-to').style.borderColor = 'var(--accent)';
+
+    reloadAllWith(t);
+  }
+
+  // ── INIT: load the overview section on page load ───────
+  window.addEventListener('DOMContentLoaded', () => {
+    activateIframes(document.getElementById('overview'));
+  });
+</script>
+</body>
+</html>
